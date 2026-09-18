@@ -4,8 +4,9 @@ An in-progress Lean 4 formalization of *Algebraic approximation for two-color
 exclusion and a quenched invariance principle for the tagged particle*
 (September 2026 manuscript).
 
-**Status: verified foundations. Theorems 1.1 and 1.2 are not yet formalized or
-proved.** See [FORMALIZATION.md](FORMALIZATION.md) for the exact source version,
+**Status: finite-volume optimizers and diffusion matrices constructed.
+Theorems 1.1 and 1.2 are not yet formalized or proved.** See
+[FORMALIZATION.md](FORMALIZATION.md) for the exact source version,
 paper-to-code correspondence, limitations, and remaining proof obligations.
 
 ## Checked mathematics
@@ -17,11 +18,24 @@ paper-to-code correspondence, limitations, and remaining proof obligations.
 - Finite product equilibrium, reversibility, and the generator–energy identity.
 - The normalized scalar Dirichlet cell problem, competitor bounds, and stirring
   monotonicity.
+- Attainment of the actual variational infimum for every nonnegative stirring
+  rate, including zero; mean-zero minimizing corrections, Euler equations,
+  uniqueness of the weighted gradient, and an exact energy-gap identity.
+- The finite-volume conductivity matrix `A`, its exact variational formula,
+  symmetry, positive semidefiniteness, uniqueness, and matrix stirring comparison.
+- The physical diffusion matrix `D = A (Σ⁻¹ ⊗ I)` and the symmetric normalization
+  `a = K⁻¹ᐟ² A K⁻¹ᐟ²`, with invertibility of the density normalization proved.
 - Scalar exponent, exponential-kernel, and summability estimates from Section 9.
 
 All mathematical modules are imported by [TwoColor.lean](TwoColor.lean).
 The original [MultiColorLean.lean](MultiColorLean.lean) installation theorem is
 preserved as a small compatibility wrapper.
+
+For the new results, start with [Optimizer.lean](TwoColor/Optimizer.lean),
+[OptimizerProperties.lean](TwoColor/OptimizerProperties.lean), and
+[CellMatrix.lean](TwoColor/CellMatrix.lean). The matrices are finite-volume
+objects; their infinite-volume convergence and strict coercivity bounds remain
+to be proved.
 
 ## Build and audit
 
@@ -43,7 +57,7 @@ not committed.
 transitive dependencies. Only `propext`, `Classical.choice`, and `Quot.sound`
 are allowed. Proof placeholders and added axioms make the audit fail.
 GitHub Actions runs both the build and this audit on pushes and pull requests.
-The initial local results are recorded in [VERIFICATION.md](VERIFICATION.md).
+The local results are recorded in [VERIFICATION.md](VERIFICATION.md).
 
 The project organization is inspired by the requested reference,
 [Manhattan-Transience](https://github.com/nitromannitol/Manhattan-Transience).

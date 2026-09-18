@@ -1,5 +1,6 @@
 import TwoColor.FiniteVolume
 import TwoColor.Geometry
+import Mathlib.LinearAlgebra.Pi
 
 /-!
 # The concrete outgoing scalar Dirichlet cell problem
@@ -7,8 +8,8 @@ import TwoColor.Geometry
 This module specializes the finite variational energy to the endpoint set,
 outgoing bonds, interior, and affine source of equation (1.1). The result is a
 scalar variational definition with the paper's division by the number of base
-vertices. No existence of a minimizing correction, matrix representation, or
-infinite-volume convergence is asserted here.
+vertices. Attainment and the matrix representation are proved in
+`TwoColor.CellMatrix`; infinite-volume convergence remains separate.
 -/
 
 noncomputable section
@@ -76,6 +77,27 @@ theorem cellAffineSource_restrict (d L : ℕ) (pRed pBlue : Fin d → ℝ)
   · exact Finset.sum_coe_sort (endpointSet d L) (fun x => dot x pRed * indicator 1 η x)
   · exact Finset.sum_coe_sort (endpointSet d L) (fun x => dot x pBlue * indicator 2 η x)
 
+/-- Two color coordinates for each spatial direction, in the paper's order. -/
+abbrev SlopeIndex (d : ℕ) := Fin 2 × Fin d
+
+abbrev CellSlope (d : ℕ) := SlopeIndex d → ℝ
+
+/-- The affine observable as a linear map of the two color slopes. -/
+def cellAffineMap (d L : ℕ) : CellSlope d →ₗ[ℝ] (Config (CellSite d L) → ℝ) where
+  toFun p := cellAffineSource d L (fun j => p (0, j)) (fun j => p (1, j))
+  map_add' p q := by
+    funext η
+    simp only [cellAffineSource, dot, Pi.add_apply, mul_add, add_mul, Finset.sum_add_distrib]
+    ring
+  map_smul' c p := by
+    funext η
+    simp only [cellAffineSource, dot, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
+    simp_rw [mul_left_comm _ c, ← Finset.mul_sum]
+    simp only [mul_assoc, ← mul_add, ← Finset.mul_sum]
+
+@[simp] theorem cellAffineMap_apply (d L : ℕ) (p : CellSlope d) :
+    cellAffineMap d L p = cellAffineSource d L (fun j => p (0, j)) (fun j => p (1, j)) := rfl
+
 /-- The number of base vertices, viewed as a real normalization factor. -/
 def cellVolume (d L : ℕ) : ℝ := (cube d L).card
 
@@ -91,8 +113,8 @@ theorem cellVolume_pos (d L : ℕ) (hL : 0 < L) : 0 < cellVolume d L := by
 
 /-- The scalar quantity defined by the right-hand side of equation (1.1).
 
-The slopes are not covariance-normalized. A later matrix construction can
-identify this quantity with `p · A_Q^δ p`.
+The slopes are not covariance-normalized. `cellConductivity_quadratic` in
+`TwoColor.CellMatrix` identifies this quantity with `p · A_Q^δ p`.
 -/
 def dirichletCellEnergy (ρ : Density) (d L : ℕ) (δ : ℝ)
     (pRed pBlue : Fin d → ℝ) : ℝ :=

@@ -7,11 +7,11 @@ Verified locally on Windows on 2026-09-18, using the repository's pinned Lean
 
 ```text
 lake build --wfail
-Build completed successfully (1988 jobs).
+Build completed successfully (2556 jobs).
 ```
 
 Both the `TwoColor` library and the `MultiColorLean` compatibility entry point
-built without warnings. The six mathematical modules are all imported by the
+built without warnings. All fourteen mathematical modules are imported by the
 library root. The installed Mathlib compilation cache was reused; this was not
 a build of Mathlib from source.
 
@@ -19,7 +19,7 @@ a build of Mathlib from source.
 
 ```text
 lake env lean Audit.lean
-Project axiom audit passed: 253 declarations, 198 theorems, 52 definitions/opaque constants.
+Project axiom audit passed: 417 declarations, 339 theorems, 75 definitions/opaque constants.
 Transitive axioms: [propext, Classical.choice, Quot.sound]
 ```
 
@@ -38,8 +38,24 @@ of those probes is part of the mathematical library.
 Read-only reviews checked the microscopic definitions, covariance algebra,
 finite product weights, generator normalization, variational admissibility and
 lower bounds, outgoing geometry, and scalar analytic estimates against the
-manuscript. The comparison is documented in
+manuscript. The optimizer and matrix extension was reviewed separately for
+attainment at zero stirring, the energy and volume factors, the distinction
+between unique gradients and possibly nonunique corrections, and both matrix
+normalization conventions. The comparison is documented in
 [FORMALIZATION.md](FORMALIZATION.md).
+
+Key new checked statements:
+
+- `exists_primal_optimizer` and `exists_mean_zero_primal_optimizer`: the actual
+  finite variational infimum is attained, including at `δ = 0`.
+- `primal_optimizer_iff_harmonic` and `primal_energy_gap`: the Euler equations
+  characterize minimizers, and the excess energy equals the correction-gap energy.
+- `cellConductivity_quadratic`, `cellConductivity_unique`, and
+  `cellConductivity_mono`: equation (1.1), uniqueness of its symmetric matrix,
+  and the positive-semidefinite stirring comparison.
+- `cellDiffusionMatrix_recover` and `cellNormalizedConductivity_quadratic`:
+  the physical and inverse-square-root normalizations of equation (1.2), tied
+  to the constructed finite-volume matrix.
 
 The main theorems remain unformalized. The checks above certify the prerequisite
 statements actually present in Lean; they do not certify the manuscript's full

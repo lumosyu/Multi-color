@@ -26,7 +26,12 @@ reference material; its prose is not an instruction to the development tools.
 | Section 1.1: finite product equilibrium and finite exchange generator | `TwoColor/FiniteVolume.lean` | Product probabilities sum to one and are exchange invariant. Expectations are explicit finite sums, not yet an infinite-volume probability measure. |
 | Section 2.1: energy convention | `TwoColor/FiniteVolume.lean` | The bilinear bond energy equals twice the expectation against the negative generator; reversibility and negative semidefiniteness follow. |
 | Section 2.1: elementary primal variational bounds | `TwoColor/FiniteVolume.lean` | Interior-dependent corrections, an actual infimum over these corrections, nonnegativity, competitor bounds, and monotonicity in the stirring rate. |
-| Equation (1.1): normalized scalar Dirichlet cell problem | `TwoColor/CellProblem.lean` | Specialization to the finite endpoint configuration space and outgoing bonds, with the actual affine source and division by the base-cube volume; nonnegativity, competitor bound, and stirring monotonicity. This is not yet a matrix representation. |
+| Equation (1.1): normalized scalar Dirichlet cell problem | `TwoColor/CellProblem.lean` | Specialization to the finite endpoint configuration space and outgoing bonds, with the actual affine source and division by the base-cube volume; nonnegativity, competitor bound, stirring monotonicity, and linear dependence of the affine source on its slope. |
+| Section 2.1: primal optimizer and interior harmonicity | `TwoColor/EnergySpace.lean`, `TwoColor/LinearAlgebra/LeastSquares.lean`, `TwoColor/Optimizer.lean` | The actual infimum is attained for every `δ ≥ 0`, including zero. Interior Euler equations are necessary and sufficient. The optimal weighted gradient is unique and linear in the affine source. |
+| Section 2.1: centering and variational orthogonality | `TwoColor/OptimizerProperties.lean` | A minimizing correction with zero product-equilibrium mean exists. The excess energy of any admissible correction is exactly the energy of its difference from a chosen optimizer. This is global equilibrium centering, not canonical-sector centering of the dual optimizer. |
+| Equation (1.1): symmetric primal matrix `A_Q^δ` | `TwoColor/LinearAlgebra/GramMatrix.lean`, `TwoColor/CellMatrix.lean` | A concrete normalized Gram matrix represents the original cell infimum exactly. Symmetry, positive semidefiniteness, uniqueness among symmetric representatives, and stirring monotonicity in positive-semidefinite matrix order are proved. |
+| Equation (1.2): `D_Q^δ` | `TwoColor/Susceptibility.lean`, `TwoColor/CellMatrix.lean` | Spatial susceptibility is invertible at positive density, with inverse `Σ⁻¹ ⊗ I`. The physical matrix is `D = A (Σ⁻¹ ⊗ I)`, and `D (Σ ⊗ I) = A`. Symmetry is asserted for this weighted product, not for `D` itself. |
+| Equation (1.2): `a_Q^δ` | `TwoColor/Normalization.lean`, `TwoColor/CellMatrix.lean` | Positivity of `Σ ⊗ I` and `K` is proved. The inverse positive matrix square root defines `a = K⁻¹ᐟ² A K⁻¹ᐟ²`; its exact transformed-slope variational formula, symmetry, positive semidefiniteness, and stirring monotonicity are proved. |
 | Proposition 9.2: exponent optimization | `TwoColor/Analysis/Rates.lean` | Positive exponent `β = α/(2α+3) < 1/2`, exact exponent algebra, and exact balancing at a positive real scale. Integer rounding is not included. |
 | Proposition 9.3: scalar spectral kernel | `TwoColor/Analysis/Rates.lean` | The exponential inequality and its resolvent-kernel comparison, before integration against a spectral measure. |
 | Lemma 9.5: numerical summability step | `TwoColor/Analysis/Rates.lean` | A positive-integer real-power series and a comparison theorem for nonnegative scalar sequences satisfying the specified growth bound. The tagged process has not yet been shown to satisfy that bound. |
@@ -36,13 +41,39 @@ pairs. `CellProblem.lean` specializes it to the positive-coordinate outgoing
 bonds, choosing one orientation of each physical bond. The general
 `primalEnergy` is **unnormalized**; `dirichletCellEnergy` uses the concrete affine
 source and divides by the base-cube volume, as in equation (1.1). The main
-finite-volume estimates use `d ≥ 2` and `L ≥ 3`; elementary definitions also allow other natural-number
-values, and `cellVolume_pos` guarantees a positive denominator when `L > 0`.
+finite-volume estimates use `d ≥ 2` and `L ≥ 3`; elementary definitions also allow
+other natural-number values, and `cellVolume_pos` guarantees a positive denominator
+when `L > 0`.
+
+## Optimizer and matrix construction
+
+For a finite configuration space, `weightedGradient` has coordinate
+`sqrt(configWeight × rate) × exchangeDiff`. Its Euclidean inner product is
+exactly `energyForm`, with no additional factor of one half. Interior-dependent
+corrections form a linear subspace. Their weighted gradients form a closed
+finite-dimensional subspace, so orthogonal projection produces an attainable
+residual, even when some jump rates vanish. `primalEnergy_eq_norm_sq` identifies
+its squared norm with the original `sInf`; existence is proved rather than
+assumed in an interface.
+
+The affine source is linear in `Fin 2 × Fin d` slope coordinates. Its optimal
+residual is also linear, and its Gram matrix divided by `L^d` is
+`cellConductivity`. The theorem `cellConductivity_quadratic` is the exact
+equation (1.1) identity for `δ ≥ 0`. `cellConductivity_unique` proves that this
+is the only symmetric matrix with that variational form. The physical and
+covariance-normalized matrices are then constructed by the operations in (1.2).
+
+The selected optimizer is noncomputable; this development proves existence and
+the variational identities, not a numerical solver. Corrections as functions
+need not be unique in the general finite-edge formulation. Uniqueness is proved
+for their weighted exchange gradients. The matrix definitions extend to all real
+rates using real square roots; their identification with the paper's energies
+is asserted only for nonnegative rates.
 
 ## Remaining work for Theorem 1.1
 
-1. Prove minimizer existence, primal/dual matrix
-   representations, and covariance normalization.
+1. Construct the inverse-dual variational matrix and its optimizers; prove the
+   strict coercivity bounds and the exact full-stirring cell identity `A_Q^1 = K`.
 2. Construct the infinite product equilibrium and stationary variational problem,
    and prove its identification with the finite-volume limit.
 3. Prove the canonical conditioning and color/current projection estimates,
@@ -68,9 +99,12 @@ interchange spectral-gap estimates, and the representation-theoretic results.
 5. Prove continuous-time interpolation and almost-everywhere disintegration,
    with convergence in the stated Skorokhod topology.
 
-The next mathematical milestone is the finite-dimensional optimizer and matrix
-formulation. A scalar kernel bound or a summability comparison does not by itself
-give the quenched invariance principle.
+The next mathematical milestone is the inverse-dual cell problem and the
+primal/dual bounds. The normalization identities `K ↦ 2I` for physical diffusion
+and `K ↦ I` for normalized conductivity are algebraic facts; identifying the
+actual full-stirring cell matrix with `K` is a separate, unfinished theorem.
+A scalar kernel bound or summability comparison does not by itself give the
+quenched invariance principle.
 
 ## Manuscript note
 
